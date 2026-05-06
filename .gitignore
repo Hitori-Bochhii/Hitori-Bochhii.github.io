@@ -1,6 +1,10 @@
 # editor config
 **/.vscode/
 
+# project config
+.claude/
+CLAUDE.md
+
 # dependencies
 node_modules/
 
