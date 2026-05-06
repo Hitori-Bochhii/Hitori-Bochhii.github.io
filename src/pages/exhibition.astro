@@ -1,0 +1,86 @@
+---
+import { Icon } from "astro-icon/components";
+import GridLayout from "@layouts/grid.astro";
+import BackwardButton from "@components/backwardButton.astro";
+
+const title = "Exhibition";
+const subtitle = "A collection of something else.";
+
+const cards = [
+    {
+        title: "Projects",
+        description: "My development project portfolio",
+        icon: "material-symbols:work",
+        url: "/projects/",
+    },
+    {
+        title: "Skills",
+        description: "My technical skills and expertise",
+        icon: "material-symbols:psychology",
+        url: "/skills/",
+    },
+    {
+        title: "Anime",
+        description: "A list of anime I have watched.",
+        icon: "material-symbols:movie",
+        url: "/anime/",
+    },
+    {
+        title: "Music",
+        description: "My favorite playlists and music collections.",
+        icon: "material-symbols:music-note",
+        url: "#",
+    },
+];
+---
+
+<GridLayout title={title} description={subtitle}>
+    <div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
+        <div class="card-base z-10 px-9 py-6 relative w-full">
+            <BackwardButton currentPath={Astro.url.pathname} />
+
+            <header class="mb-10 text-center">
+                <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-3">
+                    {title}
+                </h1>
+                <p class="text-neutral-500 dark:text-neutral-400 text-lg">
+                    {subtitle}
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                {cards.map((card) => (
+                    <a
+                        href={card.url}
+                        class="group flex flex-col items-center justify-center p-8
+                               rounded-2xl bg-white dark:bg-neutral-800/0
+                               border border-neutral-200 dark:border-neutral-700/50
+                               hover:border-(--primary)/30 dark:hover:border-(--primary)/30
+                               shadow-sm hover:shadow-lg
+                               hover:-translate-y-1
+                               transition-all duration-300 ease-out
+                               min-h-[180px]"
+                    >
+                        <div class="mb-4 flex items-center justify-center
+                                    w-14 h-14 rounded-xl
+                                    bg-(--primary)/10
+                                    group-hover:bg-(--primary)/20
+                                    transition-colors duration-300">
+                            <Icon
+                                name={card.icon}
+                                class="text-3xl text-(--primary)"
+                            />
+                        </div>
+                        <h2 class="text-lg font-semibold text-neutral-800 dark:text-neutral-100 mb-2
+                                   group-hover:text-(--primary) transition-colors duration-300">
+                            {card.title}
+                        </h2>
+                        <p class="text-sm text-neutral-500 dark:text-neutral-400 text-center leading-relaxed">
+                            {card.description}
+                        </p>
+                    </a>
+                ))}
+            </div>
+        </div>
+    </div>
+</GridLayout>

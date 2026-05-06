@@ -170,6 +170,10 @@ navbar:
     links:
         - "Home"
         - "Archive"
+        - name: "Exhibition"
+          url: "/exhibition/"
+          icon: "material-symbols:grid-view"
+          description: "A collection of projects, skills, and interests."
         - "About"
 
 # 侧边栏配置
