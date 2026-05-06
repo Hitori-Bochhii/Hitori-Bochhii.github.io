@@ -179,54 +179,26 @@ sidebar:
         # 左侧侧边栏
         left:
             - # 组件 - 资料 (预设)
-                # 类型
                 type: "profile"
-                # 位置策略 ("top" 顶部固定 | "sticky" 粘性)
                 position: "top"
-                # 页面可见性配置
                 visibility:
-                    # 匹配模式：'include' (包含), 'exclude' (排除)
                     mode: "exclude"
-                    # 页面路径匹配规则列表 (支持正则字符串)
                     paths: ["^/posts/", "^/archive"]
-            - # 组件 - 目录 (预设)
-                # 类型
-                type: "directory"
-                # 位置策略 ("top" 顶部固定 | "sticky" 粘性)
+            - # 组件 - 公告 (预设)
+                type: "announcement"
                 position: "sticky"
             - # 组件 - 文章类别 (预设)
-                # 类型
                 type: "categories"
-                # 位置策略 ("top" 顶部固定 | "sticky" 粘性)
                 position: "sticky"
-                # 响应式配置
                 responsive:
-                    # 折叠阈值
-                    collapseThreshold: 5
-                # 目录深度
-                depth: 3
+                    collapseThreshold: 999
             - # 组件 - 文章标签 (预设)
-                # 类型
                 type: "tags"
-                # 位置策略 ("top" 顶部固定 | "sticky" 粘性)
                 position: "sticky"
-                # 响应式配置
                 responsive:
-                    # 折叠阈值
-                    collapseThreshold: 20
+                    collapseThreshold: 999
         # 右侧侧边栏
         right:
-            - # 组件 - 公告 (预设)
-                # 类型
-                type: "announcement"
-                # 位置策略 ("top" 顶部固定 | "sticky" 粘性)
-                position: "top"
-                # 页面可见性配置
-                visibility:
-                    # 匹配模式：'include' (包含), 'exclude' (排除)
-                    mode: "include"
-                    # 页面路径匹配规则列表 (支持正则字符串)
-                    paths: ["^/$"]
             - # 组件 - 文章目录 (预设)
                 # 类型
                 type: "toc"
@@ -268,7 +240,7 @@ announcement:
     # 公告标题
     title: "公告"
     # 公告内容
-    content: "欢迎来到我的博客！Welcome to my blog!"
+    content: "Welcome to my blog!"
     # 允许用户关闭公告
     closable: true
     # 链接配置
