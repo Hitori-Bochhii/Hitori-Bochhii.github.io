@@ -200,35 +200,62 @@ const statCards = [
             </header>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-                <div class="rounded-xl bg-blue-50 dark:bg-blue-900/20 p-4 flex items-center gap-3">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10" id="stat-cards">
+                <!-- Total -->
+                <button
+                    data-filter="all"
+                    id="stat-total"
+                    class="stat-card selected cursor-pointer
+                           rounded-xl bg-blue-50 dark:bg-blue-900/20 p-4 flex items-center gap-3
+                           border-2 border-transparent
+                           hover:shadow-md transition-all duration-300
+                           selected:ring-blue-400 selected:bg-blue-100 selected:dark:bg-blue-900/40
+                           selected:border-blue-400 selected:shadow-md"
+                >
                     <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
                         <span class="text-blue-600 dark:text-blue-400 text-xl">📚</span>
                     </div>
-                    <div>
+                    <div class="text-left">
                         <div class="text-xl font-bold text-blue-700 dark:text-blue-300 tabular-nums">{stats.total}</div>
                         <div class="text-xs text-blue-500 dark:text-blue-400/80">Total</div>
                     </div>
-                </div>
-                <div class="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 p-4 flex items-center gap-3">
+                </button>
+                <!-- Watching -->
+                <button
+                    data-filter="watching"
+                    id="stat-watching"
+                    class="stat-card cursor-pointer
+                           rounded-xl bg-emerald-50 dark:bg-emerald-900/20 p-4 flex items-center gap-3
+                           border-2 border-transparent
+                           hover:shadow-md transition-all duration-300"
+                >
                     <div class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0">
                         <span class="text-emerald-600 dark:text-emerald-400 text-xl">▶</span>
                     </div>
-                    <div>
+                    <div class="text-left">
                         <div class="text-xl font-bold text-emerald-700 dark:text-emerald-300 tabular-nums">{stats.watching}</div>
                         <div class="text-xs text-emerald-500 dark:text-emerald-400/80">Watching</div>
                     </div>
-                </div>
-                <div class="rounded-xl bg-purple-50 dark:bg-purple-900/20 p-4 flex items-center gap-3">
+                </button>
+                <!-- Completed -->
+                <button
+                    data-filter="completed"
+                    id="stat-completed"
+                    class="stat-card cursor-pointer
+                           rounded-xl bg-purple-50 dark:bg-purple-900/20 p-4 flex items-center gap-3
+                           border-2 border-transparent
+                           hover:shadow-md transition-all duration-300"
+                >
                     <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center shrink-0">
                         <span class="text-purple-600 dark:text-purple-400 text-xl">✓</span>
                     </div>
-                    <div>
+                    <div class="text-left">
                         <div class="text-xl font-bold text-purple-700 dark:text-purple-300 tabular-nums">{stats.completed}</div>
                         <div class="text-xs text-purple-500 dark:text-purple-400/80">Completed</div>
                     </div>
-                </div>
-                <div class="rounded-xl bg-amber-50 dark:bg-amber-900/20 p-4 flex items-center gap-3">
+                </button>
+                <!-- Avg Rating (non-interactive) -->
+                <div class="rounded-xl bg-amber-50 dark:bg-amber-900/20 p-4 flex items-center gap-3 cursor-default">
                     <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
                         <span class="text-amber-600 dark:text-amber-400 text-xl">★</span>
                     </div>
@@ -259,7 +286,8 @@ const statCards = [
                                 href={anime.link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class="group block bg-white dark:bg-neutral-800/50
+                                data-filter-status={anime.status}
+                                class="anime-card group block bg-white dark:bg-neutral-800/50
                                        rounded-2xl overflow-hidden border border-neutral-200
                                        dark:border-neutral-700/50
                                        hover:shadow-xl hover:-translate-y-1
@@ -333,3 +361,90 @@ const statCards = [
         </div>
     </div>
 </GridLayout>
+
+<script>
+    function initAnimeFilter() {
+        const statCards = document.querySelectorAll('.stat-card');
+        const animeCards = document.querySelectorAll('.anime-card');
+
+        if (statCards.length === 0 || animeCards.length === 0) return;
+
+        const selectedStyles = {
+            all: 'border-blue-400 bg-blue-100 dark:bg-blue-900/40 shadow-md',
+            watching: 'border-emerald-400 bg-emerald-100 dark:bg-emerald-900/40 shadow-md',
+            completed: 'border-purple-400 bg-purple-100 dark:bg-purple-900/40 shadow-md',
+        };
+
+        function applySelected(card) {
+            // Remove all selection styles
+            statCards.forEach(c => {
+                c.classList.remove('selected', 'shadow-md');
+                // Remove all possible color classes from selectedStyles
+                Object.values(selectedStyles).forEach(s => {
+                    s.split(' ').forEach(cls => c.classList.remove(cls));
+                });
+            });
+            // Apply new selection
+            const filter = card.dataset.filter;
+            if (filter && selectedStyles[filter]) {
+                card.classList.add('selected');
+                selectedStyles[filter].split(' ').forEach(cls => card.classList.add(cls));
+            }
+        }
+
+        function filterAnime(filter) {
+            animeCards.forEach((card, index) => {
+                const status = card.dataset.filterStatus;
+                if (filter === 'all') {
+                    card.style.display = '';
+                    card.style.opacity = '1';
+                } else if (status === filter) {
+                    card.style.display = '';
+                    // Staggered fade-in
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.95)';
+                    requestAnimationFrame(() => {
+                        setTimeout(() => {
+                            card.style.transition = 'opacity 0.35s ease-out, transform 0.35s ease-out';
+                            card.style.opacity = '1';
+                            card.style.transform = '';
+                        }, 10 + Math.floor(index / 4) * 40);
+                    });
+                } else {
+                    card.style.transition = 'opacity 0.2s ease-out';
+                    card.style.opacity = '0';
+                    setTimeout(() => {
+                        if (card.style.opacity === '0') {
+                            card.style.display = 'none';
+                        }
+                    }, 200);
+                }
+            });
+        }
+
+        statCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const filter = card.dataset.filter;
+                if (!filter) return;
+                applySelected(card);
+                filterAnime(filter);
+            });
+        });
+
+        // Set Total as default selected on load
+        const totalCard = document.getElementById('stat-total');
+        if (totalCard) {
+            applySelected(totalCard);
+        }
+    }
+
+    // Run on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAnimeFilter);
+    } else {
+        initAnimeFilter();
+    }
+
+    // Also listen for Swup page transitions
+    document.addEventListener('swup:contentReplaced', initAnimeFilter);
+</script>
