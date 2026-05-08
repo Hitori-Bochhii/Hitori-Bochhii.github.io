@@ -278,6 +278,12 @@ const statCards = [
                     </p>
                 </div>
             ) : animeList.length > 0 ? (
+                <div
+                    id="anime-scroll-container"
+                    class="overflow-y-auto max-h-[75vh] overscroll-contain
+                           scrollbar-thin scrollbar-thumb-rounded
+                           pr-1"
+                >
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                     {animeList.map(anime => {
                         const statusInfo = getStatusInfo(anime.status);
@@ -347,6 +353,7 @@ const statCards = [
                         );
                     })}
                 </div>
+                </div>
             ) : (
                 <div class="text-center py-16">
                     <div class="text-5xl mb-4">😢</div>
@@ -362,10 +369,60 @@ const statCards = [
     </div>
 </GridLayout>
 
+<style is:inline>
+    /* Custom scrollbar for anime list */
+    #anime-scroll-container {
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
+        transition: scrollbar-color 0.3s ease;
+    }
+
+    #anime-scroll-container:hover,
+    #anime-scroll-container:active,
+    #anime-scroll-container.scrolling {
+        scrollbar-color: var(--primary) transparent;
+    }
+
+    #anime-scroll-container::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    #anime-scroll-container::-webkit-scrollbar-track {
+        background: transparent;
+        border-radius: 10px;
+    }
+
+    #anime-scroll-container::-webkit-scrollbar-thumb {
+        background: transparent;
+        border-radius: 10px;
+        transition: background 0.3s ease;
+        min-height: 40px;
+    }
+
+    #anime-scroll-container:hover::-webkit-scrollbar-thumb,
+    #anime-scroll-container.scrolling::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.35);
+    }
+
+    #anime-scroll-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(148, 163, 184, 0.55);
+    }
+
+    :root.dark #anime-scroll-container:hover::-webkit-scrollbar-thumb,
+    :root.dark #anime-scroll-container.scrolling::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.30);
+    }
+
+    :root.dark #anime-scroll-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(148, 163, 184, 0.50);
+    }
+</style>
+
 <script>
     function initAnimeFilter() {
         const statCards = document.querySelectorAll('.stat-card');
         const animeCards = document.querySelectorAll('.anime-card');
+        const scrollContainer = document.getElementById('anime-scroll-container');
 
         if (statCards.length === 0 || animeCards.length === 0) return;
 
@@ -393,6 +450,11 @@ const statCards = [
         }
 
         function filterAnime(filter) {
+            // Reset scroll position to top when filter changes
+            if (scrollContainer) {
+                scrollContainer.scrollTo({ top: 0, behavior: 'instant' });
+            }
+
             animeCards.forEach((card, index) => {
                 const status = card.dataset.filterStatus;
                 if (filter === 'all') {
@@ -430,6 +492,18 @@ const statCards = [
                 filterAnime(filter);
             });
         });
+
+        // Show scrollbar class while scrolling
+        if (scrollContainer) {
+            let scrollTimeout: ReturnType<typeof setTimeout>;
+            scrollContainer.addEventListener('scroll', () => {
+                scrollContainer.classList.add('scrolling');
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    scrollContainer.classList.remove('scrolling');
+                }, 1000);
+            }, { passive: true });
+        }
 
         // Set Total as default selected on load
         const totalCard = document.getElementById('stat-total');
