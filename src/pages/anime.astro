@@ -427,7 +427,16 @@ const statCards = [
 </style>
 
 <script>
+    var __animeCleanup;
+
     function initAnimeFilter() {
+        // Clean up previous listeners to prevent duplicates on re-navigation
+        if (__animeCleanup) {
+            __animeCleanup.abort();
+        }
+        __animeCleanup = new AbortController();
+        var signal = __animeCleanup.signal;
+
         var statCards = document.querySelectorAll('.stat-card');
         var scrollContainer = document.getElementById('anime-scroll-container');
         var animeCards = document.querySelectorAll('.anime-card');
@@ -518,7 +527,7 @@ const statCards = [
                 console.log('[AnimeFilter] click: ' + filter);
                 applySelected(card);
                 filterAnime(filter);
-            });
+            }, { signal: signal });
         });
 
         if (scrollContainer) {
@@ -529,7 +538,7 @@ const statCards = [
                 scrollTimeout = setTimeout(function() {
                     scrollContainer.classList.remove('scrolling');
                 }, 1000);
-            }, { passive: true });
+            }, { passive: true, signal: signal });
         }
 
         // Default: Total selected
@@ -539,11 +548,6 @@ const statCards = [
         }
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initAnimeFilter);
-    } else {
-        initAnimeFilter();
-    }
-
-    document.addEventListener('swup:contentReplaced', initAnimeFilter);
+    // Use astro:page-load for both initial load and SPA navigation
+    document.addEventListener('astro:page-load', initAnimeFilter);
 </script>
