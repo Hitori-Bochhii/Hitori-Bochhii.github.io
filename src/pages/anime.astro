@@ -541,5 +541,9 @@ const statCards = [
     }
 
     document.addEventListener('astro:page-load', initAnimeFilter);
+    // Fallback: if page already loaded by the time this module runs
+    if (document.readyState !== 'loading') {
+        initAnimeFilter();
+    }
 </script>
 
