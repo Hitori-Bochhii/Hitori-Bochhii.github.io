@@ -540,10 +540,16 @@ const statCards = [
         }
     }
 
-    document.addEventListener('astro:page-load', initAnimeFilter);
-    // Fallback: if page already loaded by the time this module runs
-    if (document.readyState !== 'loading') {
+    // Initial load: run when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAnimeFilter);
+    } else {
         initAnimeFilter();
+    }
+
+    // SPA navigation: Swup's page:view fires AFTER content is fully replaced
+    if (window.swup && window.swup.hooks) {
+        window.swup.hooks.on('page:view', initAnimeFilter);
     }
 </script>
 
