@@ -428,13 +428,17 @@ const statCards = [
 
 <script>
     function initAnimeFilter() {
-        const statCards = document.querySelectorAll('.stat-card');
-        const animeCards = document.querySelectorAll('.anime-card');
-        const scrollContainer = document.getElementById('anime-scroll-container');
+        var statCards = document.querySelectorAll('.stat-card');
+        var scrollContainer = document.getElementById('anime-scroll-container');
+        var animeCards = document.querySelectorAll('.anime-card');
 
-        if (statCards.length === 0 || animeCards.length === 0) return;
+        if (statCards.length === 0 || animeCards.length === 0) {
+            console.log('[AnimeFilter] SKIP: statCards=' + statCards.length + ' animeCards=' + animeCards.length);
+            return;
+        }
+        console.log('[AnimeFilter] READY: statCards=' + statCards.length + ' animeCards=' + animeCards.length);
 
-        const selectedStyles = {
+        var selectedStyles = {
             all: 'border-blue-400 bg-blue-100 dark:bg-blue-900/40 shadow-md',
             watching: 'border-emerald-400 bg-emerald-100 dark:bg-emerald-900/40 shadow-md',
             completed: 'border-purple-400 bg-purple-100 dark:bg-purple-900/40 shadow-md',
@@ -442,33 +446,34 @@ const statCards = [
         };
 
         function applySelected(card) {
-            // Remove all selection styles
-            statCards.forEach(c => {
+            statCards.forEach(function(c) {
                 c.classList.remove('selected', 'shadow-md');
-                // Remove all possible color classes from selectedStyles
-                Object.values(selectedStyles).forEach(s => {
-                    s.split(' ').forEach(cls => c.classList.remove(cls));
+                Object.values(selectedStyles).forEach(function(s) {
+                    s.split(' ').forEach(function(cls) { c.classList.remove(cls); });
                 });
             });
-            // Apply new selection
-            const filter = card.dataset.filter;
+            var filter = card.dataset.filter;
             if (filter && selectedStyles[filter]) {
                 card.classList.add('selected');
-                selectedStyles[filter].split(' ').forEach(cls => card.classList.add(cls));
+                selectedStyles[filter].split(' ').forEach(function(cls) { card.classList.add(cls); });
             }
+            console.log('[AnimeFilter] selected: ' + filter);
         }
 
         function filterAnime(filter) {
-            // Reset scroll position to top when filter changes
             if (scrollContainer) {
-                scrollContainer.scrollTo({ top: 0, behavior: 'instant' });
+                scrollContainer.scrollTo({ top: 0, behavior: 'auto' });
             }
 
-            animeCards.forEach((card, index) => {
-                const status = card.dataset.filterStatus;
-                const rating = parseFloat(card.dataset.rating || '0');
+            var cards = document.querySelectorAll('.anime-card');
+            console.log('[AnimeFilter] filter=' + filter + ' total=' + cards.length);
 
-                let shouldShow = false;
+            var visibleCount = 0;
+            cards.forEach(function(card, index) {
+                var status = card.dataset.filterStatus;
+                var rating = parseFloat(card.dataset.rating || '0');
+
+                var shouldShow = false;
                 if (filter === 'all') {
                     shouldShow = true;
                 } else if (filter === 'rated') {
@@ -478,64 +483,67 @@ const statCards = [
                 }
 
                 if (shouldShow) {
+                    visibleCount++;
                     card.style.display = '';
-                    // Staggered fade-in
                     card.style.opacity = '0';
                     card.style.transform = 'scale(0.95)';
-                    requestAnimationFrame(() => {
-                        setTimeout(() => {
-                            card.style.transition = 'opacity 0.35s ease-out, transform 0.35s ease-out';
-                            card.style.opacity = '1';
-                            card.style.transform = '';
-                        }, 10 + Math.floor(index / 4) * 40);
-                    });
+                    (function(c, i) {
+                        requestAnimationFrame(function() {
+                            setTimeout(function() {
+                                c.style.transition = 'opacity 0.35s ease-out, transform 0.35s ease-out';
+                                c.style.opacity = '1';
+                                c.style.transform = '';
+                            }, 10 + Math.floor(i / 4) * 40);
+                        });
+                    })(card, index);
                 } else {
                     card.style.transition = 'opacity 0.2s ease-out';
                     card.style.opacity = '0';
-                    setTimeout(() => {
-                        if (card.style.opacity === '0') {
-                            card.style.display = 'none';
-                        }
-                    }, 200);
+                    (function(c) {
+                        setTimeout(function() {
+                            if (c.style.opacity === '0') {
+                                c.style.display = 'none';
+                            }
+                        }, 200);
+                    })(card);
                 }
             });
+            console.log('[AnimeFilter] visible: ' + visibleCount);
         }
 
-        statCards.forEach(card => {
-            card.addEventListener('click', () => {
-                const filter = card.dataset.filter;
+        statCards.forEach(function(card) {
+            card.addEventListener('click', function() {
+                var filter = card.dataset.filter;
                 if (!filter) return;
+                console.log('[AnimeFilter] click: ' + filter);
                 applySelected(card);
                 filterAnime(filter);
             });
         });
 
-        // Show scrollbar class while scrolling
         if (scrollContainer) {
-            let scrollTimeout;
-            scrollContainer.addEventListener('scroll', () => {
+            var scrollTimeout;
+            scrollContainer.addEventListener('scroll', function() {
                 scrollContainer.classList.add('scrolling');
                 clearTimeout(scrollTimeout);
-                scrollTimeout = setTimeout(() => {
+                scrollTimeout = setTimeout(function() {
                     scrollContainer.classList.remove('scrolling');
                 }, 1000);
             }, { passive: true });
         }
 
-        // Set Total as default selected on load
-        const totalCard = document.getElementById('stat-total');
+        // Default: Total selected
+        var totalCard = document.getElementById('stat-total');
         if (totalCard) {
             applySelected(totalCard);
         }
     }
 
-    // Run on DOM ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initAnimeFilter);
     } else {
         initAnimeFilter();
     }
 
-    // Also listen for Swup page transitions
     document.addEventListener('swup:contentReplaced', initAnimeFilter);
 </script>
