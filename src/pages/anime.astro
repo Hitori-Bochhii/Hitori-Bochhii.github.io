@@ -440,6 +440,7 @@ const statCards = [
         var statCards = document.querySelectorAll('.stat-card');
         var scrollContainer = document.getElementById('anime-scroll-container');
         var animeCards = document.querySelectorAll('.anime-card');
+        var gridContainer = scrollContainer ? scrollContainer.querySelector('.grid') : null;
 
         if (statCards.length === 0 || animeCards.length === 0) {
             console.log('[AnimeFilter] SKIP: statCards=' + statCards.length + ' animeCards=' + animeCards.length);
@@ -453,6 +454,36 @@ const statCards = [
             completed: 'border-purple-400 bg-purple-100 dark:bg-purple-900/40 shadow-md',
             rated: 'border-amber-400 bg-amber-100 dark:bg-amber-900/40 shadow-md',
         };
+
+        // Fast-click guard: cancel all pending animation timers
+        var pendingTimers = [];
+        var currentFilter = null;
+
+        function cancelPending() {
+            pendingTimers.forEach(function(id) { clearTimeout(id); });
+            pendingTimers = [];
+        }
+
+        function addTimer(fn, delay) {
+            var id = setTimeout(function() {
+                // Remove from pending once fired
+                var idx = pendingTimers.indexOf(id);
+                if (idx >= 0) pendingTimers.splice(idx, 1);
+                fn();
+            }, delay);
+            pendingTimers.push(id);
+            return id;
+        }
+
+        function resetAllCards() {
+            var allCards = document.querySelectorAll('.anime-card');
+            allCards.forEach(function(c) {
+                c.style.display = '';
+                c.style.opacity = '';
+                c.style.transform = '';
+                c.style.transition = '';
+            });
+        }
 
         function applySelected(card) {
             statCards.forEach(function(c) {
@@ -470,15 +501,23 @@ const statCards = [
         }
 
         function filterAnime(filter) {
+            // Cancel any in-flight animation timers
+            cancelPending();
+            currentFilter = filter;
+
             if (scrollContainer) {
                 scrollContainer.scrollTo({ top: 0, behavior: 'auto' });
             }
 
+            // Force-reset all card styles to eliminate animation residue
+            resetAllCards();
+
             var cards = document.querySelectorAll('.anime-card');
             console.log('[AnimeFilter] filter=' + filter + ' total=' + cards.length);
 
-            var visibleCount = 0;
-            cards.forEach(function(card, index) {
+            // Build list of cards that should be visible + their original index
+            var visibleList = [];
+            Array.prototype.forEach.call(cards, function(card, i) {
                 var status = card.dataset.filterStatus;
                 var rating = parseFloat(card.dataset.rating || '0');
 
@@ -492,32 +531,54 @@ const statCards = [
                 }
 
                 if (shouldShow) {
-                    visibleCount++;
-                    card.style.display = '';
+                    visibleList.push({ card: card, originalIndex: i });
+                }
+            });
+
+            // Sort visible cards by original DOM order to guarantee stable ordering
+            visibleList.sort(function(a, b) { return a.originalIndex - b.originalIndex; });
+
+            // Re-append visible cards in order to the grid (re-sort DOM)
+            if (gridContainer) {
+                visibleList.forEach(function(item) {
+                    gridContainer.appendChild(item.card);
+                });
+            }
+
+            // Apply show/hide with stagger
+            var allCards = document.querySelectorAll('.anime-card');
+            Array.prototype.forEach.call(allCards, function(card) {
+                var status = card.dataset.filterStatus;
+                var rating = parseFloat(card.dataset.rating || '0');
+                var show = filter === 'all' ? true :
+                    filter === 'rated' ? rating > 0 : status === filter;
+
+                if (show) {
+                    card.style.transition = 'none';
                     card.style.opacity = '0';
                     card.style.transform = 'scale(0.95)';
-                    (function(c, i) {
-                        requestAnimationFrame(function() {
-                            setTimeout(function() {
-                                c.style.transition = 'opacity 0.35s ease-out, transform 0.35s ease-out';
-                                c.style.opacity = '1';
-                                c.style.transform = '';
-                            }, 10 + Math.floor(i / 4) * 40);
-                        });
-                    })(card, index);
+                    card.style.display = '';
+
+                    // Force reflow so the above reset is committed before transition
+                    card.offsetHeight;
+
+                    card.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+                    card.style.opacity = '1';
+                    card.style.transform = '';
                 } else {
-                    card.style.transition = 'opacity 0.2s ease-out';
+                    card.style.transition = 'opacity 0.15s ease-out';
                     card.style.opacity = '0';
                     (function(c) {
-                        setTimeout(function() {
+                        addTimer(function() {
                             if (c.style.opacity === '0') {
                                 c.style.display = 'none';
                             }
-                        }, 200);
+                        }, 160);
                     })(card);
                 }
             });
-            console.log('[AnimeFilter] visible: ' + visibleCount);
+
+            console.log('[AnimeFilter] visible: ' + visibleList.length);
         }
 
         statCards.forEach(function(card) {
