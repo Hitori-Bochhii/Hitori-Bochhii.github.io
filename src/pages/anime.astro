@@ -540,16 +540,22 @@ const statCards = [
         }
     }
 
-    // Initial load: run when DOM is ready
+    // SPA navigation: force a clean reload so filtering always binds correctly
+    if (window.swup && window.swup.hooks) {
+        var alreadyReloaded = false;
+        window.swup.hooks.on('page:view', function() {
+            if (!alreadyReloaded) {
+                alreadyReloaded = true;
+                location.reload();
+            }
+        });
+    }
+
+    // Initial (direct) load: run when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initAnimeFilter);
     } else {
         initAnimeFilter();
-    }
-
-    // SPA navigation: Swup's page:view fires AFTER content is fully replaced
-    if (window.swup && window.swup.hooks) {
-        window.swup.hooks.on('page:view', initAnimeFilter);
     }
 </script>
 
